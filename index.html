@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>Covid19 Visualization</title>
+        <script src="d3/d3.min.js"></script>
+    </head>
+    <body>
+        <div id="scene1">
+            <svg>
+                <g></g>
+            </svg>
+        </div>
+
+        <div id="scene2">
+        </div>
+
+    </body>
+    <script>
+        var vnData = [];
+
+        d3.csv('owid-covid-data.csv', function(element) {
+            if (element["iso_code"] === "VNM") {
+                vnData.push(element);
+            }
+        })
+        .then(function(data) {
+            console.log("VNElement Length is " + (vnData.length));
+        });
+
+        console.log(vnData.length);
+
+
+    </script>
+</html>
