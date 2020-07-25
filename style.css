@@ -1,0 +1,13 @@
+#message {
+    width: 30%;
+    float: left;
+}
+
+#chart {
+    width: 70%;
+    float: right;
+}
+
+#slideShow {
+    border: 1px black;
+}

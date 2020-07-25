@@ -2,32 +2,25 @@
     <head>
         <title>Covid19 Visualization</title>
         <script src="d3/d3.min.js"></script>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div id="scene1">
-            <svg>
-                <g></g>
-            </svg>
+        <div id="slideShow"> 
+            <div id="message"></div>
+            <div id="chart">
+                <svg>
+                    <g></g>
+                </svg>
+            </div>
         </div>
-
-        <div id="scene2">
-        </div>
-
     </body>
     <script>
-        var vnData = [];
+        const vnData = d3.csv('owid-covid-data.csv');
 
-        d3.csv('owid-covid-data.csv', function(element) {
-            if (element["iso_code"] === "VNM") {
-                vnData.push(element);
-            }
-        })
-        .then(function(data) {
-            console.log("VNElement Length is " + (vnData.length));
-        });
+        console.log(vnData);
 
-        console.log(vnData.length);
-
-
+       function setupScene(message, data) {
+            d3.select("#slideShow #message").text(message);  
+        }
     </script>
 </html>
