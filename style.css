@@ -1,16 +1,18 @@
-#message {
+#slideShow #message {
   width: 30%;
   float: left;
+  padding: 1em;
 }
 
-#chart {
+#slideShow #chart {
   width: 70%;
   float: right;
 }
 
 #slideShow {
-  border: 1px black;
+  display: block;
 }
+
 
 .axis path,
 .axis line {

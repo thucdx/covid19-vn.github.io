@@ -14,7 +14,7 @@
 
   <body onload="main()">
     <div id="title">
-      <h1 class="display-2">Covid19 in Vietnam</h1>
+      <h1 class="display-4">Covid19 in Vietnam</h1>
     </div>
     <div class="btn-group btn-group-toggle slideChoice" data-toggle="buttons">
       <label class="btn btn-secondary active" id="0">
@@ -31,10 +31,9 @@
         <input type="radio" name="options" autocomplete="off" /> Stage 3
       </label>
     </div>
-
     <div id="slideShow">
       <div id="message">
-        <h1 class="display-4" id="msg"></h1>
+        <p id="msg"></p>
       </div>
       <div id="chart"></div>
     </div>
@@ -173,7 +172,7 @@
       focus
         .append("rect")
         .attr("class", "tooltip")
-        .attr("width", 120)
+               .attr("width", 120)
         .attr("height", 50)
         .attr("x", 10)
         .attr("y", -22)
@@ -225,7 +224,7 @@
       }
     }
 
-    function setupScene(data, phaseInfo) {
+    function setupScene(data, phaseInfo, id) {
       // Message
       d3.select("#slideShow #message #msg").text(phaseInfo.message);
 
@@ -252,11 +251,20 @@
         );
 
         console.log(dateStats, phaseInfo.date, Date.parse(phaseInfo.date));
+
         // Annotation
+
+        // 1. remove
+        for (var oid = id; oid < 10; ++oid) {
+          d3.select("#chart svg g #anno-" + oid).remove();
+        }
+
+        // 2. annotate
         var annotate = d3
           .select("#chart svg g")
           .append("g")
-          .attr("class", "annotation");
+          .attr("class", "annotation")
+          .attr("id", "anno-" + id);
 
         if (dateStats && dateStats.length >= 1) {
           var d = dateStats[0];
@@ -276,6 +284,8 @@
           .append("text")
           .attr("transform", "rotate(-90)")
           .attr("font-style", "italic")
+          .attr("fill", "coral")
+          .attr("font-size", "0.7em")
           .text(phaseInfo.shortMessage);
       }
 
@@ -290,7 +300,7 @@
           var phaseInfo = phases[id];
           var lastDate = Date.parse(phaseInfo.date);
           var filteredData = cachedData.filter((d) => d.date <= lastDate);
-          setupScene(filteredData, phaseInfo);
+          setupScene(filteredData, phaseInfo, id);
         }
       });
     });
