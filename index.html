@@ -14,7 +14,7 @@
 
   <body onload="main()">
     <div id="title">
-      <h1 class="display-4">Covid19 in Vietnam</h1>
+      <h1 class="display-4">COVID-19 pandemic in Vietnam</h1>
     </div>
     <div class="btn-group btn-group-toggle slideChoice" data-toggle="buttons">
       <label class="btn btn-secondary active" id="0">
@@ -22,13 +22,13 @@
         Overview
       </label>
       <label class="btn btn-secondary" id="1">
-        <input type="radio" name="options" autocomplete="off" /> Stage 1
+        <input type="radio" name="options" autocomplete="off" /> First wave
       </label>
       <label class="btn btn-secondary" id="2">
-        <input type="radio" name="options" autocomplete="off" /> Stage 2
+        <input type="radio" name="options" autocomplete="off" /> Second wave
       </label>
       <label class="btn btn-secondary" id="3">
-        <input type="radio" name="options" autocomplete="off" /> Stage 3
+        <input type="radio" name="options" autocomplete="off" /> Third wave
       </label>
     </div>
     <div id="slideShow">
@@ -57,7 +57,7 @@
     var cachedData = [];
     var xScale, yScale, linePath;
 
-    var margin = 50,
+    var margin = 150,
       width = 0.7 * window.innerWidth - 2 * margin,
       height = window.innerHeight - 2 * margin - 150;
 
@@ -66,31 +66,45 @@
         name: "Overview",
         date: "2020-12-31",
         shortMessage: "",
-        message: "Overview",
+        message: `
+        <p><b>Vietnam</b> is cited by global media as having one of the best-organised epidemic control programs in the world, along the lines of other highlights such as Taiwan and South Korea.</p>
+        <p>As of <b>26 July 2020</b>, the country had <b>420</b> confirmed cases, <b>365</b> recoveries, and no deaths. </p>
+        <p>On <b>23 January 2020</b>, the first known case of COVID-19 in Vietnam was reported.</p>
+         <p>More than 400,000 tests have been performed. Hanoi, as of July is the most-affected city with 121 confirmed cases</p>
+        `,
       },
       {
-        name: "Stage 1",
+        name: "First wave",
         date: "2020-01-24",
-        shortMessage: "short msg 1",
-        message: "First confirmed case",
+        shortMessage: "First two confirmed cases",
+        message: `<p>The first two confirmed cases in Vietnam were admitted to Cho Ray Hospital, Ho Chi Minh City on <b>23 January 2020</b>, is a <b>66-year-old Chinese man</b> traveling from epicenter <b>Wuhan to Hanoi</b> to visit his son and his son who believed to have contracted the virus from his father when they met in Nha Trang.`,
       },
       {
-        name: "Stage 2",
+        name: "Second wave",
         date: "2020-03-07",
-        shortMessage: "short msg 2",
-        message: "Msg 3",
+        shortMessage: "Second wave - case #17",
+        message: `
+        <p>On <b>6 March night</b>, Hanoi urgently announced a new case of coronavirus, the first one found in the capital of Vietnam. </p>
+         <p> The patient (case <b>#17</b>), a 26-year-old woman, had been travelling across Europe during the outbreak. </p>
+          <p>She had been exhibiting several symptoms, but didn't notify the authorities about her travel history or health conditions.</p>
+          <p> Within the night, the government proceeded to track and isolate roughly 200 people who either had close contact, lived on the same street, or had been on the same flight VN0054 from London as patient No. 17. The incident also sparked a wave of stockpiling purchases across the city.
+          </p>
+          `,
       },
       {
-        name: "Stage 3",
+        name: "Third wave",
         date: "2020-07-24",
-        shortMessage: "short msg 3",
-        message:
-          "New confirmed cases after 99 days without any cases infected from community",
+        shortMessage: "First Local Case in 100 Days",
+        message: `
+          <p>Vietnam, which had gone 100 days without reporting a case of local transmission of the coronavirus, said on Saturday that a 57-year-old grandfather in the central city of Danang had tested positive. How he got the illness remains a mystery. </p>
+          <p>New confirmed cases after 99 days without any cases infected from community.</p>
+          <p> Read more: <a href="https://www.nytimes.com/2020/07/25/world/asia/coronavirus-vietnam.html"> First local case in 100 days</a>
+            `,
       },
     ];
 
     async function main() {
-      const vnData = await d3.csv("owid-covid-data.csv", function (d) {
+      const vnData = await d3.csv("owid-covid-data-3.csv", function (d) {
         if (d["iso_code"] == "VNM") {
           d.date = Date.parse(d.date);
           return d;
@@ -172,7 +186,7 @@
       focus
         .append("rect")
         .attr("class", "tooltip")
-               .attr("width", 120)
+        .attr("width", 120)
         .attr("height", 50)
         .attr("x", 10)
         .attr("y", -22)
@@ -203,30 +217,13 @@
         })
         .on("mouseout", function () {
           focus.style("display", "none");
-        })
-        .on("mousemove", mouseMove);
-
-      function mouseMove(startDate, endDate) {
-        var x0 = xScale.invert(d3.mouse(this)[0]),
-          i = bisectDate(data, x0, 1),
-          d0 = data[i - 1],
-          d1 = data[i],
-          d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-
-        if (!startDate || (d >= startDate && d <= endDate)) {
-          focus.attr(
-            "transform",
-            "translate(" + xScale(d.date) + "," + yScale(d.new_cases) + ")"
-          );
-          focus.select(".tooltip-date").text(dateFormatter(d.date));
-          focus.select(".tooltip-likes").text(formatValue(d.new_cases));
-        }
-      }
+        });
+      // .on("mousemove", mouseMove);
     }
 
     function setupScene(data, phaseInfo, id) {
       // Message
-      d3.select("#slideShow #message #msg").text(phaseInfo.message);
+      d3.select("#slideShow #message #msg").html(phaseInfo.message);
 
       var dateFormatter = d3.timeFormat("%m/%d/%y");
       var bisectDate = d3.bisector((d) => d.date).left;
@@ -284,24 +281,43 @@
           .append("text")
           .attr("transform", "rotate(-90)")
           .attr("font-style", "italic")
-          .attr("fill", "coral")
+          .attr("font-weight", "bold")
+          .attr("fill", "indianred")
           .attr("font-size", "0.7em")
           .text(phaseInfo.shortMessage);
       }
 
       // Tooltip
+
+      d3.select("svg rect.overlay").on("mousemove", mouseMove);
+
+      function mouseMove() {
+        var x0 = xScale.invert(d3.mouse(this)[0]),
+          i = bisectDate(data, x0, 1),
+          d0 = data[i - 1],
+          d1 = data[i],
+          d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+        // console.log(d);
+        if (d1 != null && d != null) {
+          var focus = d3.select(".focus");
+          focus.attr(
+            "transform",
+            "translate(" + xScale(d.date) + "," + yScale(d.new_cases) + ")"
+          );
+          focus.select(".tooltip-date").text(dateFormatter(d.date));
+          focus.select(".tooltip-likes").text(formatValue(d.new_cases));
+        }
+      }
     }
 
     $(function () {
       $(".slideChoice label").click(function (e) {
-        console.log($(this).attr("id"));
         var id = parseInt($(this).attr("id"));
-        if (0 <= id && id < phases.length) {
-          var phaseInfo = phases[id];
-          var lastDate = Date.parse(phaseInfo.date);
-          var filteredData = cachedData.filter((d) => d.date <= lastDate);
-          setupScene(filteredData, phaseInfo, id);
-        }
+        var phaseInfo = phases[id];
+        var lastDate = Date.parse(phaseInfo.date);
+        var filteredData = cachedData.filter((d) => d.date <= lastDate);
+        setupScene(filteredData, phaseInfo, id);
       });
     });
   </script>
