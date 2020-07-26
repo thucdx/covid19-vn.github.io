@@ -66,7 +66,7 @@
       {
         name: "Overview",
         date: "2020-12-31",
-        shortMessage: "short msg 0",
+        shortMessage: "",
         message: "Overview",
       },
       {
@@ -168,6 +168,7 @@
         .append("g")
         .attr("class", "focus")
         .style("display", "none");
+
       focus.append("circle").attr("r", 5);
       focus
         .append("rect")
@@ -244,17 +245,41 @@
         .duration(2000)
         .ease(d3.easeLinear)
         .attr("d", linePath);
-      
-      
-      
-      // Annotation
-      d3.select("#chart svg")
-      .append("g")
-      .attr("transform", "translate(10,10)")
-      .text("hello world")
+
+      if (phaseInfo.shortMessage && phaseInfo.shortMessage.length > 0) {
+        var dateStats = data.filter(
+          (d) => d.date == Date.parse(phaseInfo.date)
+        );
+
+        console.log(dateStats, phaseInfo.date, Date.parse(phaseInfo.date));
+        // Annotation
+        var annotate = d3
+          .select("#chart svg g")
+          .append("g")
+          .attr("class", "annotation");
+
+        if (dateStats && dateStats.length >= 1) {
+          var d = dateStats[0];
+          console.log(dateStats);
+          console.log("D " + d);
+          annotate = annotate.attr(
+            "transform",
+            "translate(" +
+              xScale(d.date) +
+              "," +
+              (-10 + yScale(d.new_cases)) +
+              ")"
+          );
+        }
+
+        annotate
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("font-style", "italic")
+          .text(phaseInfo.shortMessage);
+      }
 
       // Tooltip
-
     }
 
     $(function () {
