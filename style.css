@@ -1,13 +1,53 @@
 #message {
-    width: 30%;
-    float: left;
+  width: 30%;
+  float: left;
 }
 
 #chart {
-    width: 70%;
-    float: right;
+  width: 70%;
+  float: right;
 }
 
 #slideShow {
-    border: 1px black;
+  border: 1px black;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.focus circle {
+  fill: red;
+}
+
+.focus text {
+  font-size: 15px;
+}
+
+.tooltip {
+  fill: white;
+  stroke: #000;
+}
+
+.tooltip-date,
+.tooltip-likes {
+  font-weight: bold;
 }

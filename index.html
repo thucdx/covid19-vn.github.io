@@ -1,26 +1,273 @@
 <html>
-    <head>
-        <title>Covid19 Visualization</title>
-        <script src="d3/d3.min.js"></script>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        <div id="slideShow"> 
-            <div id="message"></div>
-            <div id="chart">
-                <svg>
-                    <g></g>
-                </svg>
-            </div>
-        </div>
-    </body>
-    <script>
-        const vnData = d3.csv('owid-covid-data.csv');
+  <head>
+    <title>Story of Covid-19 in Vietnam</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="d3/d3.min.js"></script>
+    <script src="d3-transition.v1.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+  </head>
 
-        console.log(vnData);
+  <body onload="main()">
+    <div id="title">
+      <h1 class="display-2">Covid19 in Vietnam</h1>
+    </div>
+    <div class="btn-group btn-group-toggle slideChoice" data-toggle="buttons">
+      <label class="btn btn-secondary active" id="0">
+        <input type="radio" name="options" autocomplete="off" checked />
+        Overview
+      </label>
+      <label class="btn btn-secondary" id="1">
+        <input type="radio" name="options" autocomplete="off" /> Stage 1
+      </label>
+      <label class="btn btn-secondary" id="2">
+        <input type="radio" name="options" autocomplete="off" /> Stage 2
+      </label>
+      <label class="btn btn-secondary" id="3">
+        <input type="radio" name="options" autocomplete="off" /> Stage 3
+      </label>
+    </div>
 
-       function setupScene(message, data) {
-            d3.select("#slideShow #message").text(message);  
+    <div id="slideShow">
+      <div id="message">
+        <h1 class="display-4" id="msg"></h1>
+      </div>
+      <div id="chart"></div>
+    </div>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+  <script>
+    var cachedData = [];
+    var xScale, yScale, linePath;
+
+    var margin = 50,
+      width = 0.7 * window.innerWidth - 2 * margin,
+      height = window.innerHeight - 2 * margin - 150;
+
+    var phases = [
+      {
+        name: "Overview",
+        date: "2020-12-31",
+        shortMessage: "short msg 0",
+        message: "Overview",
+      },
+      {
+        name: "Stage 1",
+        date: "2020-01-24",
+        shortMessage: "short msg 1",
+        message: "First confirmed case",
+      },
+      {
+        name: "Stage 2",
+        date: "2020-03-07",
+        shortMessage: "short msg 2",
+        message: "Msg 3",
+      },
+      {
+        name: "Stage 3",
+        date: "2020-07-24",
+        shortMessage: "short msg 3",
+        message:
+          "New confirmed cases after 99 days without any cases infected from community",
+      },
+    ];
+
+    async function main() {
+      const vnData = await d3.csv("owid-covid-data.csv", function (d) {
+        if (d["iso_code"] == "VNM") {
+          d.date = Date.parse(d.date);
+          return d;
         }
-    </script>
+      });
+
+      console.log("Total retrieved data is " + vnData.length);
+      cachedData = await vnData;
+
+      setupBase(vnData);
+      setupScene(vnData, phases[0]);
+    }
+
+    function setupBase(data) {
+      var dateFormatter = d3.timeFormat("%m/%d/%y");
+      var bisectDate = d3.bisector((d) => d.date).left;
+      var formatValue = d3.format(",");
+
+      xScale = d3
+        .scaleTime()
+        .domain(d3.extent(data, (d) => d.date))
+        .range([0, width]);
+
+      yScale = d3.scaleLinear().domain([0, 30]).range([height, 0]);
+
+      linePath = d3
+        .line()
+        .defined((d) => !isNaN(d["new_cases"]))
+        .x((d) => xScale(d.date))
+        .y((d) => yScale(d.new_cases));
+
+      // Chart
+      var svg = d3
+        .select("#slideShow #chart")
+        .append("svg")
+        .attr("width", width + 2 * margin)
+        .attr("height", height + 2 * margin)
+        .append("g")
+        .attr("transform", "translate(" + margin + ", " + margin + ")");
+
+      // X axis
+      svg
+        .append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(" + 0 + ", " + height + ")")
+        .call(d3.axisBottom(xScale).tickFormat(dateFormatter));
+
+      // Y axis
+      svg
+        .append("g")
+        .attr("class", "y axis")
+        .call(d3.axisLeft(yScale))
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        // .style("text-anchor", "end")
+        .text("Total new cases");
+
+      // Path
+      svg
+        .append("path")
+        .attr("id", "path-chart")
+        // .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 2)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round");
+      // .attr("d", linePath);
+
+      // Tooltip
+      var focus = svg
+        .append("g")
+        .attr("class", "focus")
+        .style("display", "none");
+      focus.append("circle").attr("r", 5);
+      focus
+        .append("rect")
+        .attr("class", "tooltip")
+        .attr("width", 120)
+        .attr("height", 50)
+        .attr("x", 10)
+        .attr("y", -22)
+        .attr("rx", 4)
+        .attr("ry", 4);
+
+      focus
+        .append("text")
+        .attr("class", "tooltip-date")
+        .attr("x", 18)
+        .attr("y", -2);
+
+      focus.append("text").attr("x", 18).attr("y", 18).text("New cases: ");
+
+      focus
+        .append("text")
+        .attr("class", "tooltip-likes")
+        .attr("x", 100)
+        .attr("y", 18);
+
+      svg
+        .append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .on("mouseover", function () {
+          focus.style("display", null);
+        })
+        .on("mouseout", function () {
+          focus.style("display", "none");
+        })
+        .on("mousemove", mouseMove);
+
+      function mouseMove(startDate, endDate) {
+        var x0 = xScale.invert(d3.mouse(this)[0]),
+          i = bisectDate(data, x0, 1),
+          d0 = data[i - 1],
+          d1 = data[i],
+          d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+        if (!startDate || (d >= startDate && d <= endDate)) {
+          focus.attr(
+            "transform",
+            "translate(" + xScale(d.date) + "," + yScale(d.new_cases) + ")"
+          );
+          focus.select(".tooltip-date").text(dateFormatter(d.date));
+          focus.select(".tooltip-likes").text(formatValue(d.new_cases));
+        }
+      }
+    }
+
+    function setupScene(data, phaseInfo) {
+      // Message
+      d3.select("#slideShow #message #msg").text(phaseInfo.message);
+
+      var dateFormatter = d3.timeFormat("%m/%d/%y");
+      var bisectDate = d3.bisector((d) => d.date).left;
+      var formatValue = d3.format(",");
+
+      var chart = d3.select("#slideShow #chart #path-chart").datum(data);
+
+      // Bind data
+      // Transition right?
+      chart
+        .enter()
+        .append("path")
+        .merge(chart)
+        .transition()
+        .duration(2000)
+        .ease(d3.easeLinear)
+        .attr("d", linePath);
+      
+      
+      
+      // Annotation
+      d3.select("#chart svg")
+      .append("g")
+      .attr("transform", "translate(10,10)")
+      .text("hello world")
+
+      // Tooltip
+
+    }
+
+    $(function () {
+      $(".slideChoice label").click(function (e) {
+        console.log($(this).attr("id"));
+        var id = parseInt($(this).attr("id"));
+        if (0 <= id && id < phases.length) {
+          var phaseInfo = phases[id];
+          var lastDate = Date.parse(phaseInfo.date);
+          var filteredData = cachedData.filter((d) => d.date <= lastDate);
+          setupScene(filteredData, phaseInfo);
+        }
+      });
+    });
+  </script>
 </html>
